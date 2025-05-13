@@ -1,0 +1,215 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Guía 4: Consultas simples con SELECT y JOINS</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/claat-public/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid=""
+                  id="g04"
+                  title="Guía 4: Consultas simples con SELECT y JOINS"
+                  environment="web"
+                  feedback-link="mailto:">
+    
+      <google-codelab-step label="Consultas SQL (SELECT)" duration="0">
+        <p>La sentencia <code>SELECT</code> es una instrucción DML (Lenguaje de Manipulación de Datos) utilizada para seleccionar datos de una base de datos.</p>
+<h2 is-upgraded>Estructura básica de SELECT</h2>
+<pre><code language="language-sql" class="language-sql">SELECT [CAMPOS] FROM [TABLA] [WHERE [CONDICIÓN]];
+</code></pre>
+<p>En donde [CAMPOS] son los atributos o columnas que se desean extraer de la [TABLA] que se especifique y [WHERE] es opcional, esta condición será utilizada más adelante.</p>
+<p>Si se quiere extraer solamente el nombre y apellido de la tabla USUARIO se hace de la siguiente manera:</p>
+<pre><code language="language-sql" class="language-sql">SELECT nombre, apellido FROM usuario;
+</code></pre>
+<p>Dando como resultado:</p>
+<p class="image-container"><img alt="texto" src="img\\e189c83aac90b541.jpg"></p>
+<p>Si se desea extraer todos los campos de una tabla se utiliza * de la siguiente manera:</p>
+<pre><code language="language-sql" class="language-sql">SELECT * FROM usuario;
+</code></pre>
+<p>Esta instrucción devolverá todos los registros y todos los campos que la tabla posea.</p>
+<h2 is-upgraded>Uso de ALIAS (AS)</h2>
+<p>En muchos casos es necesario asignar un nombre a alguna columna o tabla, cuando se le asigna un alias a una columna el nombre de la columna cambia en el resultado, mientras que cuando se usa el alias en la tabla este sirve para identificar campos que tengan el mismo nombre en distintas tablas.</p>
+<p>Por ejemplo se desea extraer todos los nombres de la tabla AUTOR y todos los nombres de la tabla USUARIO, pero que al mostrarse se llamen Nombres de Autores y Nombres de Usuarios.</p>
+<aside class="special"><p> ¿Qué problema habría si se quita el alias a las tablas? </p>
+</aside>
+<pre><code language="language-sql" class="language-sql">SELECT u.nombre as &#34;Nombre usuario&#34;, a.nombre as &#34;Nombre autor&#34; FROM usuario as u, autor as a;
+</code></pre>
+<aside class="special"><p> ¿Por qué el resultado de esta consulta está lleno de duplicidad? </p>
+</aside>
+<h2 is-upgraded>Cláusula WHERE</h2>
+<p>Esta cláusula devuelve un subconjunto de los registros de una tabla que cumplan con dicha condición.</p>
+<p><strong>Ejemplo:</strong></p>
+<pre><code language="language-sql" class="language-sql">SELECT * FROM libro WHERE npaginas = 300;
+</code></pre>
+<p>Esta consulta devuelve los registros de la tabla LIBRO que cumplan la condición de tener 300 páginas.</p>
+<h2 is-upgraded>Operadores adicionales en WHERE</h2>
+<ul>
+<li><strong>BETWEEN</strong>:</li>
+</ul>
+<p>Indica un intervalo de valores:</p>
+<pre><code language="language-sql" class="language-sql">SELECT * FROM libro WHERE npaginas BETWEEN 1 AND 500;
+</code></pre>
+<p>Esta instrucción devuelve los registros de la tabla LIBRO que tengan entre 1 a 500 páginas.</p>
+<ul>
+<li><strong>LIKE</strong>:</li>
+</ul>
+<p>Sirve para comparar patrones de texto:</p>
+<pre><code language="language-sql" class="language-sql">SELECT * FROM autor WHERE nombre LIKE &#39;L%&#39;;
+</code></pre>
+<p>Devuelve todos los autores cuyo nombre comience con &#34;L&#34;.</p>
+<p><a href="https://www.w3schools.com/sql/sql_wildcards.asp" target="_blank">Lista de patrones de texto.</a></p>
+<ul>
+<li><strong>IN</strong>:</li>
+</ul>
+<p>Sirve para comparar con una lista de valores fijos:</p>
+<pre><code language="language-sql" class="language-sql">SELECT num, calle, direccion
+FROM direccion
+WHERE ciudad IN (&#39;Sevilla&#39;, &#39;Córdoba&#39;, &#39;Huelva&#39;, &#39;Cádiz&#39;);
+</code></pre>
+<ul>
+<li><strong>IS NULL / IS NOT NULL</strong>:</li>
+</ul>
+<p>Devuelve los registros que sean o no sean nulos. Este operador lógico se verá más adelante cuando se trabajen los JOINS.</p>
+<pre><code language="language-sql" class="language-sql">SELECT * FROM libro WHERE fecha_publicacion IS NULL;
+</code></pre>
+<h2 is-upgraded>Operadores lógicos</h2>
+<p>Sirven para componer expresiones y filtrar aún más los registros de una tabla.</p>
+<ul>
+<li><strong>AND</strong>:</li>
+</ul>
+<p>Esta consulta devuelve los registros de la tabla libro que tengan más de 550 páginas y el título comience con la letra a.</p>
+<pre><code language="language-sql" class="language-sql">SELECT * FROM libro WHERE npaginas &gt; 550 AND titulo LIKE &#39;A%&#39;;
+</code></pre>
+<ul>
+<li><strong>OR</strong>:</li>
+</ul>
+<p>Esta consulta devuelve los registros de la tabla libro que tengan mas de 550 O cuyo titulo conmience con la letra a.</p>
+<pre><code language="language-sql" class="language-sql">SELECT * FROM libro WHERE npaginas &gt; 550 OR titulo LIKE &#39;A%&#39;;
+</code></pre>
+<ul>
+<li><strong>NOT</strong>:</li>
+</ul>
+<p>Esta consulta devuelve los registros de la tabla libro que NO contengan mas de 550 paginas.</p>
+<pre><code language="language-sql" class="language-sql">SELECT * FROM libro WHERE NOT npaginas &gt; 550;
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Consultas entre tablas (JOIN)" duration="0">
+        <p>Se pueden generar consultas en las cuales es necesario obtener datos de varias tablas relacionadas entre sí. La forma básica de hacerlo es utilizando la cláusula condicional WHERE también conocido como INNER JOIN implícito:</p>
+<pre><code language="language-sql" class="language-sql">SELECT l.titulo FROM libro as l, ejemplar as e
+WHERE l.codigo = e.codigo_libro;
+</code></pre>
+<p>A continuación se verán los principales tipos de JOINS.</p>
+<p class="image-container"><img alt="text" src="img\\a72254425c479dd9.jpeg"></p>
+<h2 is-upgraded>INNER JOIN (JOIN explícito)</h2>
+<p>Esta consulta obtiene lo mismo que el JOIN implícito.</p>
+<pre><code language="language-sql" class="language-sql">SELECT l.titulo
+FROM libro AS l
+INNER JOIN ejemplar AS e ON l.codigo = e.codigo_libro;
+</code></pre>
+<h2 is-upgraded>LEFT JOIN</h2>
+<p>El resultado de esta consulta contiene todos los registros de la relación izquierda (primera tabla indicada) y aquellos de la tabla derecha que cumplen la condición, para los demás aparecerá en los campos correspondientes un NULL.</p>
+<pre><code language="language-sql" class="language-sql">SELECT u.nombre, p.fecha_prestamo
+FROM usuario AS u
+LEFT JOIN prestamo AS p ON u.id = p.id_usuario;
+</code></pre>
+<h2 is-upgraded>RIGHT JOIN</h2>
+<p>Es análogo al LEFT JOIN, pero devolviendo todos los registros de la relación derecha (segunda tabla que aparece), y únicamente aquellos de la tabla izquierda que cumplen la condición del JOIN. Y aquellos sin equivalente en la parte izquierda tendrán en los campos correspondientes a dicha tabla un NULL.</p>
+<pre><code language="language-sql" class="language-sql">SELECT p.fecha_prestamo, u.nombre
+FROM prestamo AS p
+RIGHT JOIN usuario AS u ON u.id = p.id_usuario;
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Ejemplos prácticos" duration="0">
+        <p><strong>Ejemplo 1:</strong> Mostrar los libros que no han sido prestados en los últimos 6 meses.</p>
+<pre><code language="language-sql" class="language-sql">SELECT l.titulo
+FROM libro AS l
+LEFT JOIN prestamo AS p ON l.codigo = p.codigo_libro
+WHERE p.fecha_prestamo &lt; DATEADD(month, -6, GETDATE()) OR p.fecha_prestamo IS NULL;
+</code></pre>
+<p><strong>Ejemplo 2:</strong> Listar todos los usuarios y los libros que han prestado.</p>
+<pre><code language="language-sql" class="language-sql">SELECT u.nombre, l.titulo
+FROM usuario AS u
+INNER JOIN prestamo AS p ON u.id = p.id_usuario
+INNER JOIN libro AS l ON p.codigo_libro = l.codigo;
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Guia de laboratorio:" duration="0">
+        <p>Acceder al siguiente link de <a href="https://docs.google.com/document/d/1cYTBmZwekeTJIDQhSAQ8vLOSZpoi5KBjgYN8vK5ZWXw/edit?tab=t.0" target="_blank">guia de ejercicios</a> y seguir las indicaciones de su instructor para la asignacion de los ejercicios. En general tendran que resolver:</p>
+<ul>
+<li>Tres ejercicios faciles</li>
+<li>Dos ejercicios medios</li>
+<li>Un Ejercicio dificil</li>
+</ul>
+<p>Al tenerlos hechos enviar el script SQL unicamente con los SELECT. Las respuestas deben ser exactamente igual a las fotos proporcionadas; Caso contrario se considerara erroneo el ejercicio.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Sobre los autores de esta guía práctica" duration="0">
+        <p>Departamento de Electrónica e Informática, Universidad Centroamericana José Simeón Cañas, La Libertad, El Salvador.</p>
+<p><strong>Versión de este documento:</strong> Versión 1.05, 2025.</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p><strong>Versión</strong></p>
+</td><td colspan="1" rowspan="1"><p><strong>Año</strong></p>
+</td><td colspan="1" rowspan="1"><p><strong>Autores</strong></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><strong>1.05</strong></p>
+</td><td colspan="1" rowspan="1"><p>2025</p>
+</td><td colspan="1" rowspan="1"><p>Christian Alejandro Paz (00132720@uca.edu.sv)</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><strong>1.04</strong></p>
+</td><td colspan="1" rowspan="1"><p>2023</p>
+</td><td colspan="1" rowspan="1"><p>Alejandro Ernesto Cerón Lemus (00040116@uca.edu.sv), Brian Darwin Carranza Campos (00136020@uca.edu.sv)</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><strong>1.03</strong></p>
+</td><td colspan="1" rowspan="1"><p>2022</p>
+</td><td colspan="1" rowspan="1"><p>Brian Darwin Carranza Campos (00136020@uca.edu.sv), Alexei Eduardo Quintana Zelidon (00126118@uca.edu.sv)</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><strong>1.02</strong></p>
+</td><td colspan="1" rowspan="1"><p>2021</p>
+</td><td colspan="1" rowspan="1"><p>Fátima Adriana Renderos (00064018@uca.edu.sv)</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><strong>1.01</strong></p>
+</td><td colspan="1" rowspan="1"><p>2020</p>
+</td><td colspan="1" rowspan="1"><p>Emerson Gamaliel Nolasco (00215316@uca.edu.sv), Kevin Enmanuel Velásquez (00018616@uca.edu.sv)</p>
+</td></tr>
+</table>
+<p><img alt="license" src="img\\2d61b47ed7775e46.jpg"> This work is licensed under a <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.</p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/claat-public/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/prettify.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/codelab-elements.js"></script>
+  <script src="//support.google.com/inapp/api.js"></script>
+
+</body>
+</html>

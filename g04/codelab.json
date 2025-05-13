@@ -1,0 +1,24 @@
+{
+  "environment": "web",
+  "format": "html",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2025-05-12T20:23:15-06:00",
+  "id": "g04",
+  "duration": 0,
+  "title": "Guía 4: Consultas simples con SELECT y JOINS",
+  "summary": "Guía de aprendizaje 4",
+  "source": ".\\guia04.md",
+  "theme": "",
+  "status": [
+    "published"
+  ],
+  "category": [
+    "databases"
+  ],
+  "tags": [
+    "databases"
+  ],
+  "feedback": "mailto:",
+  "url": "g04"
+}
