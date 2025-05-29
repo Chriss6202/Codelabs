@@ -1,0 +1,24 @@
+{
+  "environment": "web",
+  "format": "html",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2025-05-29T08:57:20-06:00",
+  "id": "g05",
+  "duration": 0,
+  "title": "Funciones de agregacion y Subconsultas",
+  "summary": "Guía de aprendizaje 01",
+  "source": ".\\guia05.md",
+  "theme": "",
+  "status": [
+    "published"
+  ],
+  "category": [
+    "databases"
+  ],
+  "tags": [
+    "databases"
+  ],
+  "feedback": "mailto:e",
+  "url": "g05"
+}

@@ -1,0 +1,326 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Funciones de agregacion y Subconsultas</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/claat-public/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid=""
+                  id="g05"
+                  title="Funciones de agregacion y Subconsultas"
+                  environment="web"
+                  feedback-link="mailto:e">
+    
+      <google-codelab-step label="Funciones de agregacion" duration="0">
+        <p>Las funciones de agregación son funciones integradas en SQL que permiten aplicar operaciones matemáticas sobre conjuntos de valores, típicamente agrupados según una o más columnas de forma tal que los datos se operan en base a una regla de agrupacion que se tiene que definir de forma predeterminada.</p>
+<p>Un ejemplo simple es calcular el total de todas las facturas de un cliente en especifico. Asumamos que tenemos la siguiente lista:</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p><strong>id_cliente</strong></p>
+</td><td colspan="1" rowspan="1"><p><strong>Total_factura</strong></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>1</p>
+</td><td colspan="1" rowspan="1"><p>3.4</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>1</p>
+</td><td colspan="1" rowspan="1"><p>5.2</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>1</p>
+</td><td colspan="1" rowspan="1"><p>1.0</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>2</p>
+</td><td colspan="1" rowspan="1"><p>3.6</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>3</p>
+</td><td colspan="1" rowspan="1"><p>30.5</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>2</p>
+</td><td colspan="1" rowspan="1"><p>7.4</p>
+</td></tr>
+</table>
+<p>(tabla 1)</p>
+<p>A nosotros, como encargados de bases de datos, nos podria interesar saber cuanto ha gastado cada cliente en total con todas las facturas. Para eso tenemos que sumar el <strong>Total_factura</strong> para cada cliente, es decir, sumar todos los <strong>Total_factura</strong> para el <strong>id_cliente</strong> 1, hacer otro calculo para el <strong>id_cliente</strong> 2, y otro para <strong>id_cliente</strong> 3. En general, esperamos una lista de la siguiente manera</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p><strong>id_cliente</strong></p>
+</td><td colspan="1" rowspan="1"><p><strong>Total_factura</strong></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>1</p>
+</td><td colspan="1" rowspan="1"><p>9.6</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>2</p>
+</td><td colspan="1" rowspan="1"><p>11.0</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>3</p>
+</td><td colspan="1" rowspan="1"><p>30.5</p>
+</td></tr>
+</table>
+<p>(tabla 2)</p>
+<aside class="special"><p> En esencia, lo que realizamos aqui es agrupar las sumas de Total_factura por cada id_cliente, es decir, le sumamos los total_factura a cada cliente que le correspondia  </p>
+</aside>
+<p>Para realizar este proceso nos apoyaremos de funciones de agregacion, es decir, invocaremos una funcion que nos permita sumar los <strong>Total_factura</strong> para cada cliente.</p>
+<p>Para ello usaremos la funcion SUM(), que nos permite hacer justo esto, pero antes, estudiaremos que funciones de agregacion tenemos.</p>
+<aside class="special"><p> Cabe recalcar que debido a la naturaleza de las funciones de agregacion que realizan procedimientos matematicos, solo se pueden usar sobre columnas con valores numericos generalmente, aunque existen algunas excepciones como COUNT()  </p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Tabla de funciones de agregacion" duration="0">
+        <table>
+<tr><td colspan="1" rowspan="1"><p><strong>Funcion</strong></p>
+</td><td colspan="1" rowspan="1"><p><strong>Descripcion</strong></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>COUNT()</p>
+</td><td colspan="1" rowspan="1"><p>Realiza un conteo de cada instancia de valores no nulos. Devuelve un valor numerico con el resultado</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>SUM()</p>
+</td><td colspan="1" rowspan="1"><p>Realiza la suma de todos los valores de una columna agrupado por una o varias columnas definidas por el usuario</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>AVG()</p>
+</td><td colspan="1" rowspan="1"><p>Calcula el promedio de la columna definida, es decir, suma los valores agrupados y los divide por la cantidad de numeros sumados</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>MAX()</p>
+</td><td colspan="1" rowspan="1"><p>Devuelve como valor numerico el numero mas grande de la columna para cada columna agrupada</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>MIN()</p>
+</td><td colspan="1" rowspan="1"><p>Devuelve como valor numerico el numero mas pequeño de la columna para cada columna agrupada</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>STDEV()</p>
+</td><td colspan="1" rowspan="1"><p>Devuelve la desviacion estandar de la columna para cada columna agrupada</p>
+</td></tr>
+</table>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Uso de funciones de agregacion" duration="0">
+        <h2 is-upgraded>GROUP BY</h2>
+<p>Cuando se utilizan funciones de agregacion en una consulta SQL, como vimos con anterioridad, tenemos que saber cómo agrupar los datos para que la función opere correctamente. Para esto, SQL Server nos da el comando <strong>GROUP BY</strong></p>
+<p><strong>GROUP BY</strong> es una palabra reservada la cual, a partir de ella, nos permite declarar bajo que columnas es realizara la agrupacion al utilizar una funcion de agregacion. En otras palabras, si utilizamos SUM() nos interesa agrupar, por ejemplo, por id_cliente, por lo que en el GROUP BY debemos declarar que la agrupacion se realizara sobre dicha columna</p>
+<pre><code language="language-sql" class="language-sql">SELECT id_cliente, SUM(Total_factura) 
+FROM Ejemplo
+GROUP BY id_cliente
+ORDER BY id_cliente
+</code></pre>
+<p>La consulta anterior nos devolvera la tabla 2, es decir, la agrupacion de las sumas por id_cliente.</p>
+<aside class="special"><p> Cuando se trabaja con funciones de agregacion, se vuelve muy importante definir correctamente las columnas que se solicitan durante la consulta: los datos de estas deberian ser unicos, pues si hay columnas entre ellas con varios valores la agrupacion podria generar datos incorrectos o incompletos, por lo que al trabajar con estas lo optimo es solicitar unicamente lo minimo necesario para darle sentido a la consulta. </p>
+</aside>
+<p>Finalmente, al usar funciones de agregacion, todas las columnas que se soliciten en las consulta SQL y que se encuentren fuera de las funciones de agregacion deben ser declaradas nuevamente en la seccion de GROUP BY, si no, la consulta SQL devolvera un error.</p>
+<p><strong>Ejemplo 1</strong>: Queremos ver UNICAMENTE cual es la categoria que mas ha recaudado para los proyectos</p>
+<pre><code language="language-sql" class="language-sql">SELECT titulo, id_categoria, SUM(Precio) &#39;Total_categoria&#39; FROM Proyecto
+GROUP BY id_categoria, titulo
+ORDER BY id_categoria
+</code></pre>
+<aside class="special"><p> Porque la anterior consulta NO devuelve los datos de forma correcta/como nos interesan? Como lo arreglarias? </p>
+</aside>
+<p><strong>Ejemplo 2</strong>: Queremos ver cuanto han recaudado los lideres de proyecto de forma descendente</p>
+<pre><code language="language-sql" class="language-sql">SELECT E.id, E.nombre, SUM(P.Precio) &#39;Total de proyectos&#39; FROM Empleado E
+INNER JOIN Proyecto P ON E.id = P.id_lider
+GROUP BY E.id, E.nombre
+ORDER BY SUM(P.Precio) DESC
+
+</code></pre>
+<h2 is-upgraded>HAVING</h2>
+<p>Cuando se trabaja con funciones de agregacion, se nos puede dar el caso que queramos colocar condiciones a dichas funciones. Por ejemplo, que solo nos interesen aquellos datos que, al ser procesados por una funcion de agregacion, superen el valor de 5 (&gt;5). Generalmente, una condicion de este tipo se colocaria en un WHERE, pero SQL server es incapaz de procesar funciones de agregacion durante dicha sentencia ya que WHERE se tiene que declarar antes que GROUP BY, por lo que durante la lectura del WHERE los datos aun no estan agrupados, asi que nos tendremos que apoyar de la orden <strong>HAVING</strong></p>
+<p><strong>HAVING</strong> Funciona de la misma manera que WHERE, pero esta tiene que declararse despues de GROUP BY, por lo que ella si es capaz de procesar funciones de agregacion y por ende nos permite poner condicionales sobre estas.</p>
+<p><strong>Ejemplo 1</strong>: Queremos modificar el Ejemplo 2 para que solo nos devuelva aquellos lideres que han recaudado mas de 700$.</p>
+<pre><code language="language-sql" class="language-sql">SELECT E.id, E.nombre, SUM(P.Precio) &#39;Total de proyectos&#39; FROM Empleado E
+INNER JOIN Proyecto P ON E.id = P.id_lider
+GROUP BY E.id, E.nombre
+HAVING SUM(P.Precio) &gt; 700
+ORDER BY SUM(P.Precio) DESC
+
+</code></pre>
+<p><strong>Ejemplo 2</strong>: Queremos saber cuantos empleados hay por departamento bajo ciertas condiciones: Primero, el nombre del departamento debe tener en alguna del mismo ‘as&#39;; Segundo, que solo nos devuelva aquellos departamentos con mas de 5 empleados.</p>
+<pre><code language="language-sql" class="language-sql">SELECT D.nombre, COUNT(E.id) &#39;Total de empleados&#39; FROM Empleado E
+INNER JOIN Departamento D ON E.id_puesto = D.id
+WHERE D.nombre LIKE &#39;%as%&#39;
+GROUP BY D.nombre
+HAVING COUNT(E.id) &gt;= 5
+ORDER BY COUNT(E.id)
+
+</code></pre>
+<aside class="special"><p> Como se puede apreciar en el ejemplo 2, somos capaces de combinar las ordenes de WHERE y HAVING para realizar condicionales complejas o de varios tipos. Analice entonces, en que momento deberia usar WHERE y HAVING? </p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Subconsultas" duration="0">
+        <p>Las Subconsultas, o SubQueries, son, como el nombre indica, consultas anidadas dentro de:</p>
+<ul>
+<li>INSERT</li>
+<li>UPDATE</li>
+<li>DELETE</li>
+<li>SELECT</li>
+</ul>
+<p>Basicamente, una Subquery es una consulta independiente que funciona por si misma dentro de otra instruccion SQL y que esta es capaz de usar los resultados de la Subquery para su proceso.</p>
+<p>Para una mejor comprension del concepto y apreciacion de su utilidad, veamos el siguiente ejemplo:</p>
+<p><strong>Ejemplo 1:</strong> Tenemos que actualizar la columna Estrella de la tabla empleado, la cual representa si este empleado es un lider y ademas ha generado mas de 700$ como ganancias de proyectos, a verdadero (True).</p>
+<p>Para resolver el Ejemplo 1, necesitamos saber cuales empleados son aquellos que cumplen la condicion de ser lideres y ademas haber generado mas de 700$ en ganancias de proyectos. Esta es una consulta que ya resolvimos con anterioridad:</p>
+<pre><code language="language-SQL" class="language-SQL">SELECT E.id, E.nombre, SUM(P.Precio) &#39;Total de proyectos&#39; FROM Empleado E
+INNER JOIN Proyecto P ON E.id = P.id_lider
+GROUP BY E.id, E.nombre
+HAVING SUM(P.Precio) &gt; 700
+ORDER BY SUM(P.Precio) DESC
+</code></pre>
+<p>Esta consulta nos devuelve cuatro empleados:</p>
+<ul>
+<li>Id 17, Nombre Leoncio</li>
+<li>Id 3, Nombre Susanita</li>
+<li>Id 20, Nombre Eva Maria</li>
+<li>Id 1, Nombre Tomasa</li>
+</ul>
+<p>Sabiendo estos datos, podriamos vernos inclinados a usarlos para resolver nuestro ejemplo de la siguiente manera</p>
+<pre><code language="language-SQL" class="language-SQL">UPDATE EMPLEADO SET Estrella = 1 WHERE id = 17 OR id = 3 OR id = 20 OR id = 1
+
+</code></pre>
+<p>La sentencia actualizara, de forma correcta, la columna estrella a verdadero (1) a los empleados que han generado mas de 700$. Sin embargo, esta solucion nos genera dos posibles problemas:</p>
+<ul>
+<li>Que pasaria si tenemos mas de 200 empleados que cumplen la condicion? Deberiamos colocar el id de esos 200 empleados en la condicion WHERE, lo cual nos generaria una solucion enorme e ineficiente para nosotros</li>
+<li>Esta solucion es valida por el momento, pero si en un futuro nos solicitan hacer la actualizacion nuevamente y ahora hay mas empleados (o menos) que cumplen la condicion tendriamos que buscar el id de estos y modificar la solucion</li>
+</ul>
+<p>Como podemos aprecia, nuestra solucion, aunque correcta es ineficiente y no es replicable para el futuro. Para este tipo de problemas, sin embargo, nos podemos apoya de Subqueries para resolverlo de manera tal que resulte en una solucion corta y que ademas sea dinamica, es decir, aplicable para cualquier caso.</p>
+<p>La solucion, usando SubQueries, es la siguiente:</p>
+<pre><code language="language-SQL" class="language-SQL">UPDATE EMPLEADO SET Estrella = 1 WHERE id IN 
+(SELECT E.id FROM Empleado E
+INNER JOIN Proyecto P ON E.id = P.id_lider
+GROUP BY E.id, E.nombre
+HAVING SUM(P.Precio) &gt; 700)
+</code></pre>
+<p>Primero, centrandose en la SubQuery, esta es la misma SubQuery que usamos para saber los empleados que han generado mas de 700$ con la modificacion de que unicamente devuelve la lista de Ids de los mismos. El resultado de esta columna es una tabla de la siguiente forma:</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p><strong>id</strong></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>1</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>3</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>17</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>20</p>
+</td></tr>
+</table>
+<p>Teniendo esta lista, podemos modificar nuestra condicional WHERE del UPDATE apoyandonos de la palabra reservada IN, que, como recordamos, cumple una condicion si los datos de la columna que estamos verificando se encuentran dentro de una lista de datos. En esencia, las modificaciones que hicimos le permite al UPDATE verificar los datos de la columna id si existen en la lista que se genera al ejecutar la SubQuery.</p>
+<p>De forma similar, podemos usar esta estructura para las sentencias de DELETE, verificando una lista de elementos que queramos eliminar de forma dinamica, sin embargo, uno de los mayores usos de las SubQueries vienen al usar SubQueries dentro de consultas SELECT.</p>
+<p><strong>Ejemplo 2:</strong> Conseguir el promedio de lo ganado por todas las areas de proyectos, tomando en cuenta que el precio total de un proyecto es igual a el precio del mismo mas el precio agregado del area al que pertenece.</p>
+<p>Viendo la definicion del ejercicio, podemos vernos inclinados a primero sumar los precios de los proyectos mas el precio de las areas y luego sacar el promedio, de una manera similar a esta:</p>
+<pre><code language="language-sql" class="language-sql">SELECT AVG(SUM(P.Precio + A.precio)) &#39;Precio Total&#39; FROM Proyecto P
+INNER JOIN Categoria C ON P.id_categoria = C.id
+INNER JOIN Area A ON A.id = C.id_area
+
+</code></pre>
+<p>Sin embargo, SQL presenta una fuerte restriccion a estos casos: No se pueden tener funciones agregadas anidadas, es decir, no podemos hacer AVG(SUM()), o SUM(COUNT()), etc. Eso sin mencionar que aun si se pudiera esa solucion no presenta lo que necesitamos, ya que necesitamos especificamente, primero las ganancias de cada area y luego el promedio de las mismas. Es en estos casos en que nos podemos apoyar, nuevamente, de SubQuery:</p>
+<pre><code language="language-sql" class="language-sql">SELECT AVG(SQ.[Precio Total]) &#39;Promedio&#39; FROM 
+(SELECT C.nombre, SUM(P.Precio + A.precio) &#39;Precio Total&#39; FROM Proyecto P
+INNER JOIN Categoria C ON P.id_categoria = C.id
+INNER JOIN Area A ON A.id = C.id_area
+GROUP BY C.nombre) SQ
+
+</code></pre>
+<p>Lo que podemos apreciar: La SubQuery nos devuelve una lista de las sumas del total de las areas, una tabla con el siguiente formato:</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>#</p>
+</td><td colspan="1" rowspan="1"><p>Nombre</p>
+</td><td colspan="1" rowspan="1"><p>Precio Total</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>1</p>
+</td><td colspan="1" rowspan="1"><p>Análisis Financiero</p>
+</td><td colspan="1" rowspan="1"><p>937.1</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>2</p>
+</td><td colspan="1" rowspan="1"><p>Ciberseguridad</p>
+</td><td colspan="1" rowspan="1"><p>3721.4</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>3</p>
+</td><td colspan="1" rowspan="1"><p>Contabilidad</p>
+</td><td colspan="1" rowspan="1"><p>810.3</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>4</p>
+</td><td colspan="1" rowspan="1"><p>Design Thinking</p>
+</td><td colspan="1" rowspan="1"><p>1125.5</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>5</p>
+</td><td colspan="1" rowspan="1"><p>Liderazgo</p>
+</td><td colspan="1" rowspan="1"><p>3310.5</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>6</p>
+</td><td colspan="1" rowspan="1"><p>Scrum</p>
+</td><td colspan="1" rowspan="1"><p>1082.8</p>
+</td></tr>
+</table>
+<p>Con esos datos, ahora tenemos que sacar el promedio de la columna Precio Total, por lo que construimos una consulta y nuestra fuente de datos (FROM) va a ser la subconsulta. Es decir, la Subconsulta nos va a dejar acceder a los datos de esta como que de una tabla se tratase, lo cual nos permite hacer todos los procedimientos que ya conocemos, como condicionales, uniones con JOIN, usar funciones agregadas, etc. Sabiendo que Precio Total tiene los datos que nos interesan, lo ultimo que tenemos que hacer hacer un promedio de dicha columna y tendremos nuestras respuesta final.</p>
+<aside class="special"><p> Al usar consultas como fuentes de datos, es importante que todas las columnas tengan un nombre, ya que ese es el nombre que usaremos para referirnos a ellas fuera de la SubQuery. Para columnas normales no hay problema, pero columnas calculadas deben llevar un alias si queremos referenciarlas en algun futuro. </p>
+</aside>
+<p>Despues de ver estos casos, podemos hacer ciertas conclusiones sobre las SubQueries.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Usos de Subconsultas" duration="0">
+        <ol type="1">
+<li>Podemos usar SubQueries como que de una lista se tratasen, o un valor unico, para usarlas dentro de condionales</li>
+<li>Podemos usarlas como fuentes de datos dentro de otras consultas para usar los resultados de la SubQuery como una tabla</li>
+<li>Todas las columnas de una SubQuery necesitan un nombre si van a ser referenciadas fuera de la misma</li>
+<li>Una SubQuery debe funcionar de manera independiente, es decir, ella sola debe poder ser ejecutada y devolver datos</li>
+<li>Podemos anidar todas las SubQueries que sean necesitadas, pero se debe tomar en cuenta que a mayor anidacion de SubQueries peor es el rendimiento de una consulta</li>
+<li>Si un problema puede resolverse sin necesidad de subconsultas, es recomendable optar por esa solución, ya que generalmente ofrece mejor rendimiento y menor complejidad.</li>
+<li>Casos en los que se necesite usar funciones de agregacion sobre funciones de agregacion son problemas que se resuelven con SubQueries</li>
+<li>Casos donde se necesiten dato/s de forma dinamica para sentencias de SELECT, UPDATE, INSERT y DELETE son problemas que se resuelve con SubQueries</li>
+<li>Dentro de una consulta SQL se puede colocar SubQueries en: <ul>
+<li>La seccion de columnas (Sin embargo, aqui lo unico que puede devolver la consulta es una celda (un solo valor) ya que si no esta devolvera un error)</li>
+<li>Como fuente de datos despues del FROM (Incluso podemos aplicarle JOINs a una SubQuery ya sea a una tabla que ya poseamos o incluso a otra SubQuery)</li>
+<li>En condicionales WHERE y HAVING</li>
+</ul>
+</li>
+</ol>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Ejercicios" duration="0">
+        <p>Siga las instrucciones del instructor encargado para la realizacion de los ejercicios. La solucion de estos debera ir con el siguiente formato:</p>
+<pre><code language="language-sql" class="language-sql">--Ejercicio (numero del ejercicio)
+/*
+Solucion del ejercicio
+*/
+--Ejercicio (numero del ejercicio)
+/*
+Solucion del ejercicio
+*/
+--Ejercicio (numero del ejercicio)
+/*
+Solucion del ejercicio
+*/
+
+</code></pre>
+<p>En el script unicamente debe ir la solucion de los ejercicios, sin el script de generacion de la base de datos. A su vez, se calificara que la solucion del ejercicio tiene que devolver una funcion exactamente igual a la solucion propuesta. Caso contrario, el ejercicio se considerara como erroneo.</p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/claat-public/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/prettify.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/codelab-elements.js"></script>
+  <script src="//support.google.com/inapp/api.js"></script>
+
+</body>
+</html>
