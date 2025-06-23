@@ -1,0 +1,24 @@
+{
+  "environment": "web",
+  "format": "html",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2025-06-23T15:36:57-06:00",
+  "id": "g06",
+  "duration": 0,
+  "title": "Procedimientos almacenados y funciones.",
+  "summary": "Guía de aprendizaje 01",
+  "source": ".\\guia06.md",
+  "theme": "",
+  "status": [
+    "published"
+  ],
+  "category": [
+    "databases"
+  ],
+  "tags": [
+    "databases"
+  ],
+  "feedback": "mailto:e",
+  "url": "g06"
+}

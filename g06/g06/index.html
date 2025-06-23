@@ -1,0 +1,323 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Procedimientos almacenados y funciones.</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/claat-public/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid=""
+                  id="g06"
+                  title="Procedimientos almacenados y funciones."
+                  environment="web"
+                  feedback-link="mailto:e">
+    
+      <google-codelab-step label="Procedimientos almacenados" duration="0">
+        <p>Un procedimiento almacenado, o stored procedure en inglés, es un conjunto de sentencias SQL, al cual se le asigna un nombre y se almacena como un objeto en el servidor de la base de datos, de manera que este pueda ser reutilizado y compartido con diferentes programas.</p>
+<p>Al ejecutar un procedimiento por primera vez, SQL Server un plan de ejecución y lo guarda en el plan cache, de forma que en ejecuciones futuras se pueda reutilizar dicho plan y el procedimiento se realice muy rápido con rendimiento confiable.</p>
+<p><strong>Ventajas</strong></p>
+<ul>
+<li>Reducción del tráfico en la red</li>
+<li>Encapsula lógica de negocio</li>
+<li>Añade seguridad para proteger contra ataques de SQL Injection</li>
+<li>Mantenibilidad</li>
+</ul>
+<p><strong>Sintaxis</strong></p>
+<pre><code language="language-sql" class="language-sql">CREATE [OR ALTER] PROCEDURE nombre_procedimiento
+[
+@aram1 datatype [, ...n]
+]
+AS
+BEGIN
+    sentencia_sql;
+    [...n]
+END
+
+</code></pre>
+<p>La información que se encuentra entre corchetes es opcional. La notación &#34;<strong>, ... n</strong>&#34; indica que esa instrucción se puede repetir una o más veces. De esta manera podemos decir que el procedimiento puede recibir más de un parámetro y que puede ejecutar más de una sentencia SQL. Además, podemos ocupar &#34;<strong>OR ALTER</strong>&#34; para modificar el procedimiento si ya existe.</p>
+<p>Ocupando la base de datos de la biblioteca, queremos una lista de los libros prestados, con su fecha de préstamo, su fecha de devolución y el nombre completo del usuario al que se le hizo el préstamo. Si prestamos atención, la información que queremos es una consulta que hace JOIN entre cuatro tablas, por lo que escribir esa consulta una y otra vez puede ser tedioso y poco práctico. En lugar de eso, podemos generar un procedimiento almacenado que se encargue de eso por nosotros. La consulta del JOIN:</p>
+<pre><code language="language-sql" class="language-sql">SELECT l.titulo Libro, p.fecha_prestamo &#39;Fecha de préstamo&#39;, p.fecha_devolucion &#39;Fecha de devolución&#39; CONCAT(u.nombre, &#39; &#39;, u.apellido) as Cliente
+FROM PRESTAMO AS p
+INNER JOIN USUARIO AS u ON p.codigo_usuario = u.codigo
+INNER JOIN EJEMPLAS AS e ON e.codigo = p.codigo_ejemplar
+INNER JOIN LIBRO AS l ON l.codigo = e.codigo_libro
+</code></pre>
+<p>Lo único que debemos hacer en este caso es ingresar esa sentencia SQL de consulta en nuestra definición de procedimiento. Así:</p>
+<pre><code language="language-sql" class="language-sql">CREATE PROCEDURE listaPrestamoUsuarioLibro
+AS
+BEGIN
+    SELECT l.titulo Libro, p.fecha_prestamo &#39;Fecha de préstamo&#39;, p.fecha_devolucion &#39;Fecha de devolución&#39; CONCAT(u.nombre, &#39; &#39;, u.apellido) as Cliente
+    FROM PRESTAMO AS p
+    INNER JOIN USUARIO AS u ON p.codigo_usuario = u.codigo
+    INNER JOIN EJEMPLAS AS e ON e.codigo = p.codigo_ejemplar
+    INNER JOIN LIBRO AS l ON l.codigo = e.codigo_libro
+  END;
+</code></pre>
+<p>Ahora que tenemos nuestro procedimiento, la forma de mandarlo a llamar es:</p>
+<pre><code language="language-sql" class="language-sql">EXEC nombre_procedimiento
+</code></pre>
+<p>El cual en nuestro caso seria:</p>
+<pre><code language="language-sql" class="language-sql">EXEC listaPrestamoUsuarioLibro.
+</code></pre>
+<h2 is-upgraded>Parametros</h2>
+<p>Como ya se mencionó, se pueden agregar varios parámetros a los procedimientos, pero además de eso se pueden definir también como parámetros de salida, de forma que se puedan almacenar en variables que declaremos.</p>
+<pre><code language="language-sql" class="language-sql">/*
+Modificando el procedimiento creado para que reciba un parámetro de entrada y un parámetro de salida
+*/
+CREATE OR ALTER PROCEDURE listaPrestamoUsuarioLibro
+@titulo VARCHAR(100),
+@cantidad SMALLINT OUTPUT
+AS
+BEGIN
+    SELECT l.titulo Libro, p.fecha_prestamo &#39;Fecha de préstamo&#39;, p.fecha_devolucion &#39;Fecha de devolución&#39; CONCAT(u.nombre, &#39; &#39;, u.apellido) as Cliente
+    FROM PRESTAMO AS p
+    INNER JOIN USUARIO AS u ON p.codigo_usuario = u.codigo
+    INNER JOIN EJEMPLAS AS e ON e.codigo = p.codigo_ejemplar
+    INNER JOIN LIBRO AS l ON l.codigo = e.codigo_libro
+    WHERE l.titulo LIKE CONCAT(&#39;%&#39;, @titulo, &#39;%&#39;);
+
+    SELECT @cantidad = @@ROWCOUNT;
+  END;
+
+</code></pre>
+<p>Podemos observar que al parámetro cantidad después de su tipo de dato le especificamos que es de salida con &#34;OUTPUT&#34;. Luego vemos como la última sentencia SQL es una consulta en la que asignamos el valor de @@ROWCOUNT al parámetro de salida cantidad.</p>
+<aside class="special"><p> En T-SQL, @@ROWCOUNT es una variable global que el servidor modifica. Esta variable devuelve un entero que significa el número de filas que fueron afectadas en la sentencia SQL ejecutada previamente. Esto puede ser un INSERT, UPDATE, DELETE O SELECT. </p>
+</aside>
+<p>Ahora, para ejecutar nuestro procedimiento:</p>
+<pre><code language="language-sql" class="language-sql">/*
+Ahora creamos una variable para almacenar la salida del procedimiento
+*/
+DECLARE @count SMALLINT;
+
+-- Ejecutando el procedimiento
+EXEC listaPrestamosUsuarioLibro
+    @titulo = &#39;a&#39;,
+    @cantidad = @count OUTPUT;
+    
+SELECT @count;
+</code></pre>
+<p>Es importante destacar que para que estas instrucciones funcionen, debe seleccionarse todo desde la instrucción <strong>DECLARE</strong> hasta <strong>SELECT @count;</strong> y ejecutarse todo al mismo tiempo.</p>
+<h2 is-upgraded>Estructuras de control</h2>
+<p><strong>IF...ELSE</strong></p>
+<p>T-SQL también nos permite utilizar estructuras de control de selección, como lo son if y else</p>
+<pre><code language="language-sql" class="language-sql">-- ESTRUCTURAS DE CONTROL
+IF (expresion_booleana)
+BEGIN
+    -- Sentencia(s) que se ejecuta(n) si la expresion es verdadera
+END
+ELSE
+BEGIN
+    --Sentencia(s) que se ejecuta(n) si la expresion es falsa
+END
+
+</code></pre>
+<p><strong>Ejemplo:</strong></p>
+<pre><code language="language-sql" class="language-sql">BEGIN 
+    DECLARE @x INT = 10, @y INT =20;
+    IF (@x &gt; 0)
+    BEGIN
+	    IF (@x &lt; @y)
+	    BEGIN
+		    PRINT &#39;0 &lt; x &lt; y&#39;;
+	    END
+	    ELSE
+	    BEGIN
+		    PRINT &#39;0 &lt; y &lt;= x&#39;;
+	    END
+    END
+END
+</code></pre>
+<p><strong>WHILE</strong></p>
+<p>De igual forma, podemos hacer estructuras de control iterativas. La sintaxis:</p>
+<pre><code language="language-sql" class="language-sql">WHILE expresion_booleana
+BEGIN
+    -- Sentencias sql a ejecutar
+END
+
+</code></pre>
+<p><strong>Ejemplo:</strong></p>
+<pre><code language="language-sql" class="language-sql">BEGIN
+    DECLARE @a INT = 0, @b INT = 1, @tmp INT, @i INT = 1;
+    WHILE @i &lt; 10
+    BEGIN
+	    SELECT @tmp = @b, @b = @a + @b, @a = @tmp, @i = @i +1;
+	    PRINT &#39;b = &#39; + CAST(@b AS VARCHAR);
+    END
+END
+
+</code></pre>
+<p>Este ejemplo imprime en pantalla los 10 primeros números calculados de la serie de Fibonacci.</p>
+<p>Tanto dentro de los procedimientos almacenados como de las funciones, pueden utilizarse estructuras de control para añadir lógica a conveniencia, como se mostrará más adelante.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Funciones" duration="0">
+        <p>De forma similar a los procedimientos almacenados, las funciones son conjuntos de sentencias SQL que se almacenan como objetos en la base de datos que suelen encapsular procesos lógicos para su reutilización.</p>
+<p>Sin embargo, la principal diferencia con los procedimientos almacenados es que es obligatorio que las funciones devuelvan un valor, al contrario de los procedimientos que pueden o no tener valores de retorno. Otras diferencias entre procedimientos y funciones son:</p>
+<ul>
+<li>Las funciones pueden tener sólo parámetros de entrada, mientras que los procedimientos pueden tener de entrada y salida.</li>
+<li>Las funciones pueden ser llamadas desde un procedimiento, pero no se puede llamar un procedimiento desde una función.</li>
+<li>Las funciones escalares pueden usarse como campo en una consulta.</li>
+<li>Sólo se permiten instrucciones de consulta, no es posible insertar, actualizar o eliminar datos de tablas.</li>
+</ul>
+<p>Existen 2 tipos principales de funciones. Las funciones escalares que devuelven un único valor y las funciones de tabla, que retornan tablas generadas dentro de la misma.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Funciones Escalares" duration="0">
+        <p>Las funciones escalares reciben varios parámetros y devuelven un único valor. Sintaxis:</p>
+<pre><code language="language-sql" class="language-sql">CREATE [OR ALTER] FUNCTION dbo.[nombre_funcion] (
+    @param1 datatype [, ...n]
+)
+RETURNS datatype
+AS
+BEGIN
+    [sentencias sql]
+    [... n]
+    RETURN @varable_de_retorno
+END
+
+</code></pre>
+<p>Como puede observarse, la sintaxis en muy similar a la de un procedimiento, con algunas diferencias: los parámetros (que serán únicamente de entrada) van encerrados en paréntesis. RETURNS indica el tipo de dato que se devolverá y RETURN devuelve el valor en sí. De igual forma como con procedimientos, se puede sustituir CREATE por ALTER para modificar la función una vez haya sido creada.</p>
+<p>A continuación, algunos ejemplos de funciones, siempre sobre la base de datos de la biblioteca.</p>
+<p><strong>Ejemplo:</strong></p>
+<p>Dado el código de un libro, se desea obtener el total recaudado por los prestamos de sus ejemplares. Si el código dado no existe, devolver -1.</p>
+<pre><code language="language-sql" class="language-sql">CREATE FUNCTION recaudado (@c_libro int)
+RETURNS money
+AS 
+BEGIN
+    DECLARE @total money;
+    SELECT @total = SUM(precio)
+	    FROM LIBRO l
+	    INNER JOIN EJEMPLAR e
+	    ON l.codigo = e.codigo_libro
+	    INNER JOIN PRESTAMO p
+	    ON p.codigo_ejemplar = e.codigo
+	    WHERE codigo_libro = @c_libro
+    IF (@total IS NULL)
+	    SET @total = -1
+    RETURN @total;
+END
+
+</code></pre>
+<p>Como puede observarse, dentro de las funciones pueden incluirse estructuras de control para añadir lógica según convenga.</p>
+<aside class="special"><p> Prestar atención a que RETURNS no es igual a RETURN. </p>
+<p>RETURNS especifica el tipo de dato que la función va devolver, que puede ser cualquiera de los tipos validos en SQL Server. RETURN es el que devuelve el valor.</p>
+</aside>
+<p>Para ejecutar la función una vez creada:</p>
+<pre><code language="language-sql" class="language-sql">SELECT dbo.recaudado(1) AS &#39;Recaudado&#39;;
+</code></pre>
+<p>Las funciones brindan la posibilidad que pueden ser incluidas en una consulta como si de otra columna se tratara. Si se quisiera obtener el total recaudado de cada uno de los libros, se puede ejecutar:</p>
+<pre><code language="language-sql" class="language-sql">SELECT codigo, titulo, dbo.recaudado(codigo) AS &#39;Recaudado&#39; FROM LIBRO;
+</code></pre>
+<p>De esta forma veríamos cada uno de los títulos registrados junto a su total recaudado.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Funciones de tabla" duration="0">
+        <p>Este tipo de funciones brinda como valor de retorno una tabla generada dentro de la misma. Estas brindan la posibilidad de incluir estructuras de control como IF o WHILE. Pueden ser utilizadas en el FROM de una consulta y también en las sentencias JOIN.</p>
+<p>Para ejemplo, se puede recrear el ejemplo hecho en la parte de Procedimientos, pero ahora como una función que devuelve una tabla.</p>
+<pre><code language="language-sql" class="language-sql">CREATE FUNCTION lista()
+RETURNS table
+AS
+    RETURN
+    SELECT l.titulo Libro, p.fecha_prestamo &#39;Fecha de préstamo&#39;, p.fecha_devolucion &#39;Fecha de devolución&#39;, CONCAT(u.nombre, &#39; &#39;, u.apellido) AS Cliente
+    FROM PRESTAMO AS p
+    INNER JOIN USUARIO AS u ON p.codigo_usuario = u.codigo
+    INNER JOIN EJEMPLAR AS e ON e.codigo = p.codigo_ejemplar
+    INNER JOIN LIBRO AS l ON l.codigo = e.codigo_libro;
+
+</code></pre>
+<p>La tabla generada por esta función puede ser generada total o parcialmente, de la siguiente forma:</p>
+<pre><code language="language-sql" class="language-sql">SELECT * FROM dbo.lista();
+SELECT Libro, Cliente FROM dbo.lista();
+
+</code></pre>
+<p>Asimismo, la tabla generada puede ser tomada para sentencias JOIN.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Tarea" duration="0">
+        <p>Siga las instrucciones del instructor encargado para la realizacion de los ejercicios. La solucion de estos debera ir con el siguiente formato:</p>
+<pre><code language="language-sql" class="language-sql">--Ejercicio (numero del ejercicio)
+/*
+Solucion del ejercicio
+*/
+--Ejercicio (numero del ejercicio)
+/*
+Solucion del ejercicio
+*/
+--Ejercicio (numero del ejercicio)
+/*
+Solucion del ejercicio
+*/
+
+</code></pre>
+<p>En el script unicamente debe ir la solucion de los ejercicios, sin el script de generacion de la base de datos. A su vez, se calificara que la solucion del ejercicio tiene que devolver una funcion exactamente igual a la solucion propuesta. Caso contrario, el ejercicio se considerara como erroneo.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Sobre los autores de esta guía práctica" duration="0">
+        <p>Departamento de Electrónica e Informática, Universidad Centroamericana José Simeón Cañas, La Libertad, El Salvador.</p>
+<p><strong>Versión de este documento:</strong> Versión 1.05, 2025.</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p><strong>Versión</strong></p>
+</td><td colspan="1" rowspan="1"><p><strong>Año</strong></p>
+</td><td colspan="1" rowspan="1"><p><strong>Autores</strong></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><strong>1.05</strong></p>
+</td><td colspan="1" rowspan="1"><p>2025</p>
+</td><td colspan="1" rowspan="1"><p>Christian Alejandro Paz (00132720@uca.edu.sv)</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><strong>1.04</strong></p>
+</td><td colspan="1" rowspan="1"><p>2023</p>
+</td><td colspan="1" rowspan="1"><p>Alejandro Ernesto Cerón Lemus (00040116@uca.edu.sv), Brian Darwin Carranza Campos (00136020@uca.edu.sv)</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><strong>1.03</strong></p>
+</td><td colspan="1" rowspan="1"><p>2022</p>
+</td><td colspan="1" rowspan="1"><p>Brian Darwin Carranza Campos (00136020@uca.edu.sv), Alexei Eduardo Quintana Zelidon (00126118@uca.edu.sv)</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><strong>1.02</strong></p>
+</td><td colspan="1" rowspan="1"><p>2021</p>
+</td><td colspan="1" rowspan="1"><p>Fátima Adriana Renderos (00064018@uca.edu.sv)</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><strong>1.01</strong></p>
+</td><td colspan="1" rowspan="1"><p>2020</p>
+</td><td colspan="1" rowspan="1"><p>Emerson Gamaliel Nolasco (00215316@uca.edu.sv), Kevin Enmanuel Velásquez (00018616@uca.edu.sv)</p>
+</td></tr>
+</table>
+<p><img alt="license" src="img\\2d61b47ed7775e46.jpg"> This work is licensed under a <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.</p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/claat-public/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/prettify.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/codelab-elements.js"></script>
+  <script src="//support.google.com/inapp/api.js"></script>
+
+</body>
+</html>
