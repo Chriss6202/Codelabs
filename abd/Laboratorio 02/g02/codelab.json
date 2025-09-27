@@ -1,0 +1,24 @@
+{
+  "environment": "web",
+  "format": "html",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2025-09-26T18:22:18-06:00",
+  "id": "g02",
+  "duration": 0,
+  "title": "Gestión de usuarios y administración de permisos en SQL Server",
+  "summary": "Guía de aprendizaje 02",
+  "source": ".\\g02.md",
+  "theme": "",
+  "status": [
+    "published"
+  ],
+  "category": [
+    "databases"
+  ],
+  "tags": [
+    "databases"
+  ],
+  "feedback": "mailto:e",
+  "url": "g02"
+}
